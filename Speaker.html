@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+    <title>Text voice</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+ 
+
+<body>
+    <textarea id="t" placeholder="type here..."></textarea>
+    <button onclick="speechSynthesis.speak
+    (new SpeechSynthesisUtterance(t.value))">🔉 Speak</button>
+</body>
+</html>
