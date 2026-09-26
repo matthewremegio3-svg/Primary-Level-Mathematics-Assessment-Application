@@ -3,10 +3,10 @@ import json
 import csv
 import random
 import tkinter as tk
-from tkinter import messagebox, ttk 
+from tkinter import messagebox, ttk
 # --- New Imports for Image Handling ---
 # NOTE: Pillow must be installed for image handling ('pip install Pillow')
-from PIL import Image, ImageTk 
+from PIL import Image, ImageTk
 # --- END New Imports ---
 
 # --- Pygame Imports for Sound Effects ---
@@ -15,11 +15,36 @@ import pygame
 from pygame import mixer
 # --- END IMPORTS ---
 
+
+def resolve_project_dir():
+    """Find the folder that actually contains the quiz assets and data."""
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    candidates = [
+        script_dir,
+        os.path.join(script_dir, "quizapp"),
+        os.path.dirname(script_dir),
+    ]
+
+    for candidate in candidates:
+        if not candidate or not os.path.isdir(candidate):
+            continue
+
+        required = [
+            "quiz_level.json",
+            "cat_neutral.png",
+            "correct.wav",
+        ]
+        if all(os.path.exists(os.path.join(candidate, name)) for name in required):
+            return candidate
+
+    return script_dir
+
+
 # Load quiz data from JSON
 def load_quiz_data():
-    """Loads quiz data from quiz_level.json in the script's directory."""
+    """Loads quiz data from quiz_level.json in the project directory."""
     try:
-        base_dir = os.path.dirname(__file__)
+        base_dir = resolve_project_dir()
         file_path = os.path.join(base_dir, "quiz_level.json")
         with open(file_path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -37,6 +62,7 @@ quiz_levels = load_quiz_data()
 class QuizApp:
     def __init__(self, root):
         self.root = root
+        self.data_dir = resolve_project_dir()
         self.root.title("🐾 Cat Quiz Adventure 🐾")
         
         # Base dimensions for scaling logic
@@ -60,7 +86,7 @@ class QuizApp:
         self.scale = 1.0
         
         # Define volume level (0.3 = 30% volume)
-        self.SOUND_VOLUME = 0.3 
+        self.SOUND_VOLUME = 0.3
 
         # --- Image Loading (Base objects) ---
         self.base_images = {}
@@ -77,9 +103,9 @@ class QuizApp:
         self.click_sound = None 
         try:
             pygame.mixer.init()
-            # Load sound files. Files must be named 'correct.wav', 'wrong.wav', 
-            # and 'click.wav' (for general interaction) and placed in the script's directory.
-            BASE_DIR = os.path.dirname(__file__)
+            # Load sound files. Files must be named 'correct.wav', 'wrong.wav',
+            # and 'click.wav' and live in the project asset folder.
+            BASE_DIR = self.data_dir
 
             self.correct_sound = mixer.Sound(os.path.join(BASE_DIR, "correct.wav"))
             self.wrong_sound   = mixer.Sound(os.path.join(BASE_DIR, "wrong.wav"))
@@ -116,7 +142,7 @@ class QuizApp:
             'heart_empty': "heart_empty.png",
         }
         
-        base_dir = os.path.dirname(__file__)
+        base_dir = self.data_dir
 
         for state, filename in image_files.items():
             file_path = os.path.join(base_dir, filename)
@@ -281,7 +307,7 @@ class QuizApp:
         if not self.user_name or not self.selected_level or len(self.quiz_data) == 0:
             return
 
-        base_dir = os.path.dirname(__file__)
+        base_dir = self.data_dir
         file_path = os.path.join(base_dir, "quiz_results.csv")
 
         file_exists = os.path.isfile(file_path)
